@@ -1,98 +1,281 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🔐 JWT Authentication Service
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A production-ready authentication service built with **NestJS**, **MongoDB**, **Redis**, and **JWT**, implementing secure access/refresh token authentication, refresh token rotation, MFA, OAuth2 login, and role-based authorization.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Designed as a standalone microservice that can be integrated into any SaaS application.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Tech Stack
 
-## Project setup
+* **Framework:** NestJS
+* **Language:** TypeScript
+* **Database:** MongoDB
+* **Cache:** Redis
+* **Authentication:** JWT + Refresh Tokens
+* **Password Hashing:** Argon2id
+* **OAuth:** Google & GitHub
+* **MFA:** TOTP (Google Authenticator)
+* **Documentation:** Swagger
+* **Logging:** Winston + pino-http
+* **Containerization:** Docker & Docker Compose
 
-```bash
-$ npm install
+---
+
+## ✨ Features
+
+* User Registration
+* Secure Login
+* JWT Access Token Authentication
+* Refresh Token Rotation
+* Redis Token Revocation (Blacklist)
+* Role-Based Authorization (RBAC)
+* OAuth2 Social Login
+* Multi-Factor Authentication (TOTP)
+* Login Rate Limiting
+* Global Exception Handling
+* Structured Logging
+* Swagger API Documentation
+
+---
+
+## 📁 Project Structure
+
+```text
+src/
+├── auth/
+│   ├── controllers/
+│   ├── services/
+│   ├── guards/
+│   ├── strategies/
+│   └── dto/
+│
+├── users/
+│   ├── schema/
+│   ├── repository/
+│   └── service/
+│
+├── common/
+│   ├── decorators/
+│   ├── filters/
+│   ├── guards/
+│   └── interceptors/
+│
+├── config/
+│   ├── jwt.config.ts
+│   ├── redis.config.ts
+│   └── database.config.ts
+│
+└── main.ts
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## 🏗️ Architecture
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```text
+                Client
+                   │
+                   │
+             HTTP Request
+                   │
+                   ▼
+          NestJS Auth Service
+                   │
+        ┌──────────┴──────────┐
+        │                     │
+        ▼                     ▼
+    MongoDB               Redis
+   User Storage      Token Blacklist
+                           &
+                    Rate Limit Counters
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## 🗄️ Database Schema
 
-# e2e tests
-$ npm run test:e2e
+### Users
 
-# test coverage
-$ npm run test:cov
+```ts
+{
+  _id: ObjectId,
+  email: string,
+  password_hash: string,
+  roles: string[],
+  mfa_secret: string,
+  is_active: boolean,
+  created_at: Date
+}
 ```
 
-## Deployment
+### Refresh Tokens
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```ts
+{
+  _id: ObjectId,
+  user_id: ObjectId,
+  refresh_token_hash: string,
+  expires_at: Date,
+  revoked: boolean
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 🔑 Authentication Flow
 
-Check out a few resources that may come in handy when working with NestJS:
+```
+Register
+    │
+    ▼
+Login
+    │
+    ├── Access Token (15 min)
+    │
+    └── Refresh Token (7 days)
+             │
+             ▼
+        Refresh Endpoint
+             │
+             ▼
+     Old Token Revoked
+             │
+             ▼
+     New Token Pair Issued
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 📌 API Endpoints
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+| Method | Endpoint           | Description           |
+| ------ | ------------------ | --------------------- |
+| POST   | `/auth/register`   | Register new user     |
+| POST   | `/auth/login`      | User login            |
+| POST   | `/auth/refresh`    | Refresh access token  |
+| DELETE | `/auth/logout`     | Logout & revoke token |
+| POST   | `/auth/mfa/enable` | Enable MFA            |
+| GET    | `/users/me`        | Get current user      |
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## 🔒 Security
 
-## License
+* Argon2id password hashing
+* JWT Access Tokens
+* Refresh Token Rotation
+* Redis Token Blacklist
+* HttpOnly Refresh Cookies
+* Role-Based Authorization
+* OAuth2 Authentication
+* MFA (Google Authenticator)
+* Helmet Security Headers
+* Input Validation
+* Rate Limiting
+* CORS Whitelist
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+## 📊 Logging
+
+* Request Correlation IDs
+* Structured JSON Logs
+* Authentication Failure Logs
+* Login Activity Logs
+
+---
+
+## ⚡ Caching Strategy
+
+Redis is used for:
+
+* Revoked JWT tokens
+* Refresh token blacklist
+* Login rate limiting
+* TTL-based automatic expiration
+
+---
+
+## 🧪 Testing
+
+### Unit Tests
+
+* Auth Service
+* JWT Guards
+* User Service
+
+### Integration Tests
+
+* Register Flow
+* Login Flow
+* Refresh Flow
+* Logout Flow
+
+### Load Testing
+
+* 1000 Concurrent Login Requests
+
+---
+
+## 🐳 Running with Docker
+
+```bash
+docker-compose up --build
+```
+
+Services:
+
+* Auth Service
+* MongoDB
+* Redis
+
+---
+
+## 📖 Swagger
+
+```bash
+http://localhost:3000/api
+```
+
+Interactive API documentation with JWT authentication support.
+
+---
+
+## 📈 Scalability
+
+* Stateless Authentication
+* Horizontal Scaling
+* Redis Cluster Support
+* MongoDB Replica Set Compatible
+* Microservice Ready
+
+---
+
+## 🎯 Concepts Covered
+
+* JWT Authentication
+* Refresh Token Rotation
+* NestJS Guards
+* OAuth2 Flow
+* Redis TTL
+* RBAC Authorization
+* MFA Authentication
+* Secure Cookie Strategy
+* Production Error Handling
+
+---
+
+## 💼 Resume Highlights
+
+**JWT Authentication Service**
+
+* Built a production-ready authentication microservice using NestJS, MongoDB, Redis, and JWT.
+* Implemented refresh token rotation, Redis-based token revocation, OAuth2 login, and TOTP multi-factor authentication.
+* Added role-based authorization, rate limiting, structured logging, Docker support, and Swagger documentation following production best practices.
+
+---
+
+## 📄 License
+
+This project is intended for learning, portfolio, and backend architecture practice.
