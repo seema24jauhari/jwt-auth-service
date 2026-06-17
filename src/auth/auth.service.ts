@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import * as express from 'express'; // ← make sure this is at the top
 import { UsersService } from 'src/users/users.service';
 import { TokensService } from 'src/tokens/tokens.service';
+import { RedisService } from 'src/redis/redis.service';
 
 
 @Injectable()
@@ -17,6 +18,7 @@ export class AuthService {
     private tokensService: TokensService,
     private jwtService: JwtService,
     private config: ConfigService,  
+    private redisService: RedisService
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -67,9 +69,15 @@ export class AuthService {
     if (!token) throw new UnauthorizedException('No refresh token');
 
     // check if token is blacklisted/deleted
-    const user = await this.tokensService.isValid(token);
-    if (!user) throw new UnauthorizedException('Invalid refresh token');
+    let isBlacklisted: boolean;
+    try {
+      isBlacklisted = await this.redisService.isBlacklisted(token);
+    } catch {
+      // Redis is down/unreachable — fall back to MongoDB instead of trusting blindly
+      isBlacklisted = !(await this.tokensService.isValid(token));
+    }
   
+    if (isBlacklisted) throw new UnauthorizedException('Token revoked');
 
     try {
       const payload = this.jwtService.verify(token, {
@@ -94,6 +102,11 @@ export class AuthService {
     // blacklist it — even if attacker has this token, it won't work
     await this.tokensService.revoke(token);
 
+    if(token){
+      const decoded: any = this.jwtService.decode(token);
+      const ttl = decoded.exp - Math.floor(Date.now() / 1000); // seconds left on token
+      await this.redisService.blacklistToken(token, ttl);       // Redis — instant check going forward
+    }
     res.clearCookie('refresh_token');
     return { message: 'Logged out' };
   }

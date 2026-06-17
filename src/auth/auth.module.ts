@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Token, TokenSchema } from '../tokens/schemas/token.schema';
 import { UsersModule } from '../users/users.module';
 import { TokensModule } from '../tokens/tokens.module';
+import { RedisModule } from 'src/redis/redis-.module';
 
 @Module({
   imports: [
@@ -18,8 +19,9 @@ import { TokensModule } from '../tokens/tokens.module';
         signOptions: { expiresIn: config.get<string>('JWT_EXPIRY') as any },
       }),
     }),
-    UsersModule, // 🔥 required
+    UsersModule,
     TokensModule,
+    RedisModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Token.name, schema: TokenSchema },
