@@ -11,6 +11,7 @@ import { TokensModule } from '../tokens/tokens.module';
 import { RedisModule } from 'src/redis/redis-.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
+import { DashboardModule } from 'src/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { JwtStrategy } from './jwt.strategy';
     TokensModule,
     RedisModule,
     PassportModule,
+    DashboardModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Token.name, schema: TokenSchema },

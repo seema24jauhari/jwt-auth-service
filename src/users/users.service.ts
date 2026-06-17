@@ -16,7 +16,7 @@ export class UsersService {
   }
 
 
-  create(email: string, password_hash: string) {
-    return this.userModel.create({ email, password_hash, is_active: true});
+  create(email: string, password_hash: string, role: string = "student") {
+    return this.userModel.create({ email, password_hash, is_active: true, roles: [role]});
   }
 }

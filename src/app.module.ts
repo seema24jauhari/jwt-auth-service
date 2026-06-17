@@ -5,17 +5,29 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 import { LoggerModule } from 'nestjs-pino';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { RedisThrottlerStorage } from './common/redis-throttler.storage';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [{ ttl: 900000, limit: 5 }],
+        storage: new RedisThrottlerStorage(
+          config.get<string>('REDIS_URL') ?? 'redis://localhost:6379',
+        ),
+      }),
+    }),
     LoggerModule.forRoot({
       pinoHttp: {
         transport: { target: 'pino-pretty' }, // pretty-prints in dev
         customProps: (req) => ({ correlationId: (req as any).correlationId }),
       },
-    }),
-    ConfigModule.forRoot({
-      isGlobal: true,
     }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
@@ -27,7 +39,9 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
     UsersModule
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

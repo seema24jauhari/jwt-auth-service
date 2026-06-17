@@ -2,8 +2,8 @@ import { Body, Controller, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { ConfigService } from '@nestjs/config';
 import * as express from 'express'; // ← namespace import
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -17,6 +17,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
   login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: express.Response, @Req() req: express.Request) {
     return this.authService.login(loginDto.email, loginDto.password, res, req);
   }

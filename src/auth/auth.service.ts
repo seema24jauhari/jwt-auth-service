@@ -1,7 +1,5 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from '../users/schemas/user.schema';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -30,9 +28,9 @@ export class AuthService {
     }
 
     const password_hash = await argon2.hash(registerDto.password, { type: argon2.argon2id });
-    const user = await this.usersService.create(registerDto.email, password_hash);
+    const user = await this.usersService.create(registerDto.email, password_hash, registerDto.role);
 
-    return { id: user._id, email: user.email };
+    return { id: user._id, email: user.email, roles: user.roles };
   }
 
   async login(email: string, password: string, res: express.Response, req: express.Request) {
@@ -48,9 +46,9 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const access_token = this.jwtService.sign({ sub: user._id, email: user.email });
+    const access_token = this.jwtService.sign({ sub: user._id, email: user.email, roles: user.roles });
 
-    
+
     let payload = {email: email, password: password}
     const refresh_token = this.jwtService.sign(payload, {
       secret: this.config.get<string>('REFRESH_SECRET'),
