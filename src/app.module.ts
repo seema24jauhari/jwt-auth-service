@@ -13,7 +13,8 @@ import { MongooseModule } from '@nestjs/mongoose';
       useFactory: (config: ConfigService) => ({
         uri: config.get<string>('DATABASE_URI'),
       }),
-    }),    AuthModule
+    }),    
+    AuthModule
   ],
   controllers: [],
   providers: [],
