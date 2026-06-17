@@ -17,8 +17,8 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: express.Response) {
-    return this.authService.login(loginDto.email, loginDto.password, res);
+  login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: express.Response, @Req() req: express.Request) {
+    return this.authService.login(loginDto.email, loginDto.password, res, req);
   }
   
   @Post('refresh')

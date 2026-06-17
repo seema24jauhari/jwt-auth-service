@@ -9,6 +9,7 @@ import * as express from 'express'; // ← make sure this is at the top
 import { UsersService } from 'src/users/users.service';
 import { TokensService } from 'src/tokens/tokens.service';
 import { RedisService } from 'src/redis/redis.service';
+import { logger } from '../common/logger';
 
 
 @Injectable()
@@ -34,12 +35,18 @@ export class AuthService {
     return { id: user._id, email: user.email };
   }
 
-  async login(email: string, password: string, res: express.Response) {
+  async login(email: string, password: string, res: express.Response, req: express.Request) {
     const user = await this.usersService.findByEmailWithPasswordHash(email);
-    if (!user) throw new UnauthorizedException('Invalid credentials');
-    
+    if (!user) {
+      logger.error('Login failed: User not found', { email, correlationId: req.correlationId });
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     const valid = await argon2.verify(user.password_hash, password);
-    if (!valid) throw new UnauthorizedException('Invalid credentials');
+    if (!valid){
+      logger.error('Login failed: Password Not Match', { email, correlationId: req.correlationId });
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     const access_token = this.jwtService.sign({ sub: user._id, email: user.email });
 
@@ -60,6 +67,7 @@ export class AuthService {
     });
 
     await this.tokensService.create(user._id.toString(), refresh_token, expiresAt);
+    logger.info('Login successful', { email, userId: user._id, correlationId: req.correlationId });
     return { access_token };
   }
 

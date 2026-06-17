@@ -9,6 +9,8 @@ import { Token, TokenSchema } from '../tokens/schemas/token.schema';
 import { UsersModule } from '../users/users.module';
 import { TokensModule } from '../tokens/tokens.module';
 import { RedisModule } from 'src/redis/redis-.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
@@ -22,12 +24,13 @@ import { RedisModule } from 'src/redis/redis-.module';
     UsersModule,
     TokensModule,
     RedisModule,
+    PassportModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Token.name, schema: TokenSchema },
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy],
 })
 export class AuthModule {}
