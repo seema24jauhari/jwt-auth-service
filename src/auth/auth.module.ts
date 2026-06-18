@@ -12,6 +12,8 @@ import { RedisModule } from 'src/redis/redis-.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { DashboardModule } from 'src/dashboard/dashboard.module';
+import { GoogleStrategy } from './strategy/google.strategy';
+import { GithubStrategy } from './strategy/github.strategy';
 
 @Module({
   imports: [
@@ -33,6 +35,6 @@ import { DashboardModule } from 'src/dashboard/dashboard.module';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, GoogleStrategy, GithubStrategy],
 })
 export class AuthModule {}

@@ -1,9 +1,11 @@
-import { Body, Controller, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as express from 'express'; // ← namespace import
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -23,6 +25,7 @@ export class AuthController {
   }
   
   @Post('refresh')
+  @SkipThrottle()
   refresh(@Req() req: express.Request) {
     return this.authService.refresh(req);
   }
@@ -30,5 +33,49 @@ export class AuthController {
   @Post('logout')
   logout(@Req() req: express.Request, @Res({ passthrough: true }) res: express.Response) {
     return this.authService.logout(req, res);
+  }
+
+  @Get('google')
+  @SkipThrottle()
+  @UseGuards(AuthGuard('google'))
+  googleLogin() {
+    // Passport redirects to Google's consent screen — body never runs
+  }
+
+  @Get('google/callback')
+  @SkipThrottle()
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req: any, @Res({ passthrough: true }) res: express.Response) {
+    return this.authService.handleOAuthLogin(req.user, res);
+  }
+
+  @Get('github')
+  @SkipThrottle()
+  @UseGuards(AuthGuard('github'))
+  githubLogin() {}
+
+  @Get('github/callback')
+  @SkipThrottle()
+  @UseGuards(AuthGuard('github'))
+  async githubCallback(@Req() req: any, @Res({ passthrough: true }) res: express.Response) {
+    return this.authService.handleOAuthLogin(req.user, res);
+  }
+
+  @Post('mfa/setup')
+  @UseGuards(JwtAuthGuard)
+  @SkipThrottle()
+  setup(@Req() req: any) {
+    return this.authService.setupMfa(req.user.id);
+  }
+
+  @Post('mfa/login')
+  @UseGuards(JwtAuthGuard)
+  @SkipThrottle()
+  verify(@Body() body: {code: string;}, @Req() req: any) 
+  {
+    return this.authService.verifyMfaLogin(
+      req.user.sub._id,
+      body.code,
+    );
   }
 }

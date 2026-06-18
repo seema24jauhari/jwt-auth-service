@@ -10,6 +10,9 @@ export class User {
   @Prop({ type: [String], default: ['user'] }) roles: string[];
   @Prop({ select: false }) mfa_secret?: string;
   @Prop({ default: true }) is_active: boolean;
+  @Prop() provider?: string;       // 'google' | 'github' | undefined for email/password
+  @Prop() providerId?: string;     // the ID Google/GitHub gave this user
+  @Prop({ default: false }) mfa_enabled: boolean;
 }
 export const UserSchema = SchemaFactory.createForClass(User);
 

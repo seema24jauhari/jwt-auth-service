@@ -12,11 +12,28 @@ export class UsersService {
   }
 
   findByEmailWithPasswordHash(email: string) {
-    return this.userModel.findOne({ email }).select('+password_hash');;
+    return this.userModel.findOne({ email }).select('+password_hash');
+  }
+
+  findByIdForMFA(userId: string) {
+    return this.userModel.findOne({ id: userId }).select('+mfa_secret');
   }
 
 
   create(email: string, password_hash: string, role: string = "student") {
     return this.userModel.create({ email, password_hash, is_active: true, roles: [role]});
+  }
+
+  async findOrCreateOAuthUser(data: { email: string; provider: string; providerId: string }) {
+    let user = await this.userModel.findOne({ email: data.email });
+    if (!user) {
+      user = await this.userModel.create({
+        email: data.email,
+        provider: data.provider,
+        providerId: data.providerId,
+        roles: ['student'],
+      });
+    }
+    return user;
   }
 }
