@@ -8,9 +8,9 @@ import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as express from 'express'; // ← make sure this is at the top
-import { UsersService } from 'src/users/users.service';
-import { TokensService } from 'src/tokens/tokens.service';
-import { RedisService } from 'src/redis/redis.service';
+import { UsersService } from '../users/users.service';
+import { TokensService } from '../tokens/tokens.service';
+import { RedisService } from '../redis/redis.service';
 import { logger } from '../common/logger';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
@@ -207,7 +207,6 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    console.log("======================user",user)
     const valid = speakeasy.totp.verify({
       secret: user.mfa_secret,
       encoding: 'base32',

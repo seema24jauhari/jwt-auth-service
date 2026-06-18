@@ -8,12 +8,14 @@ import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
 @Controller('auth')
+@SkipThrottle()
 export class AuthController {
   constructor(
     private readonly authService: AuthService,     
 ) {}
 
   @Post('register')
+  @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
@@ -25,7 +27,7 @@ export class AuthController {
   }
   
   @Post('refresh')
-  @SkipThrottle()
+  @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
   refresh(@Req() req: express.Request) {
     return this.authService.refresh(req);
   }
@@ -36,26 +38,22 @@ export class AuthController {
   }
 
   @Get('google')
-  @SkipThrottle()
   @UseGuards(AuthGuard('google'))
   googleLogin() {
     // Passport redirects to Google's consent screen — body never runs
   }
 
   @Get('google/callback')
-  @SkipThrottle()
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Req() req: any, @Res({ passthrough: true }) res: express.Response) {
     return this.authService.handleOAuthLogin(req.user, res);
   }
 
   @Get('github')
-  @SkipThrottle()
   @UseGuards(AuthGuard('github'))
   githubLogin() {}
 
   @Get('github/callback')
-  @SkipThrottle()
   @UseGuards(AuthGuard('github'))
   async githubCallback(@Req() req: any, @Res({ passthrough: true }) res: express.Response) {
     return this.authService.handleOAuthLogin(req.user, res);
@@ -63,14 +61,13 @@ export class AuthController {
 
   @Post('mfa/setup')
   @UseGuards(JwtAuthGuard)
-  @SkipThrottle()
   setup(@Req() req: any) {
     return this.authService.setupMfa(req.user.id);
   }
 
   @Post('mfa/login')
   @UseGuards(JwtAuthGuard)
-  @SkipThrottle()
+  @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
   verify(@Body() body: {code: string;}, @Req() req: any) 
   {
     return this.authService.verifyMfaLogin(

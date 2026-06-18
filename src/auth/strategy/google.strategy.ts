@@ -19,7 +19,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
     async validate(accessToken: string, refreshToken: string, profile: Profile) {
         try {
-            console.log('Profile received:', JSON.stringify(profile, null, 2));
             const email = profile.emails?.[0]?.value;
             if (!email) throw new Error('No email returned from Google');
 

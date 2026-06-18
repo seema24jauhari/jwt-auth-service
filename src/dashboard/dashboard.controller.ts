@@ -6,10 +6,10 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller()
+@SkipThrottle()
 export class DashboardController {
   @Get('staff')
   @Roles('staff')
-  @SkipThrottle()
   @UseGuards(JwtAuthGuard, RolesGuard)
   getStaffDashboard(@Req() req: express.Request) {
     const { iat, exp, ...user } = req.user as any;
@@ -18,7 +18,6 @@ export class DashboardController {
 
   @Get('student')
   @Roles('student')
-  @SkipThrottle()
   @UseGuards(JwtAuthGuard, RolesGuard)
   getStudentDashboard(@Req() req: express.Request) {
     const { iat, exp, ...user } = req.user as any;
