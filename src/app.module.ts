@@ -8,6 +8,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { RedisThrottlerStorage } from './common/redis-throttler.storage';
 import { APP_GUARD } from '@nestjs/core';
+import { ApiKeyMiddleware } from './common/middleware/api-key.middleware';
 
 @Module({
   imports: [
@@ -34,17 +35,16 @@ import { APP_GUARD } from '@nestjs/core';
       useFactory: (config: ConfigService) => ({
         uri: config.get<string>('DATABASE_URI'),
       }),
-    }),    
+    }),
     AuthModule,
-    UsersModule
+    UsersModule,
   ],
   controllers: [],
-  providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-  ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+    consumer.apply(ApiKeyMiddleware).forRoutes('*');
   }
 }

@@ -19,12 +19,20 @@ export class UsersService {
     return this.userModel.findOne({ id: userId }).select('+mfa_secret');
   }
 
-
-  create(email: string, password_hash: string, role: string = "student") {
-    return this.userModel.create({ email, password_hash, is_active: true, roles: [role]});
+  create(email: string, password_hash: string, role: string = 'student') {
+    return this.userModel.create({
+      email,
+      password_hash,
+      is_active: true,
+      roles: [role],
+    });
   }
 
-  async findOrCreateOAuthUser(data: { email: string; provider: string; providerId: string }) {
+  async findOrCreateOAuthUser(data: {
+    email: string;
+    provider: string;
+    providerId: string;
+  }) {
     let user = await this.userModel.findOne({ email: data.email });
     if (!user) {
       user = await this.userModel.create({

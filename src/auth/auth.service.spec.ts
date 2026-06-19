@@ -46,7 +46,6 @@ describe('AuthService', () => {
         { provide: ConfigService, useValue: mockConfigService },
         { provide: TokensService, useValue: mockTokensService },
         { provide: RedisService, useValue: mockRedisService }, // ← add this line
-
       ],
     }).compile();
 
@@ -62,7 +61,9 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('should throw ConflictException if email already exists', async () => {
-      mockUsersService.findByEmail.mockResolvedValue({ email: 'test@test.com' }); // fake: user exists
+      mockUsersService.findByEmail.mockResolvedValue({
+        email: 'test@test.com',
+      }); // fake: user exists
 
       await expect(
         authService.register({ email: 'test@test.com', password: 'pass123' }),
@@ -70,18 +71,25 @@ describe('AuthService', () => {
     });
 
     it('should create a new user if email does not exist', async () => {
-        mockUsersService.findByEmail.mockResolvedValue(null);
-        mockUsersService.create.mockResolvedValue({
-            _id: 'fake-id-123',
-            email: 'new@test.com',
-            roles: ['student'],
-        });
+      mockUsersService.findByEmail.mockResolvedValue(null);
+      mockUsersService.create.mockResolvedValue({
+        _id: 'fake-id-123',
+        email: 'new@test.com',
+        roles: ['student'],
+      });
 
-        const result = await authService.register({ email: 'new@test.com', password: 'pass123' });
+      const result = await authService.register({
+        email: 'new@test.com',
+        password: 'pass123',
+      });
 
-        expect(result).toEqual({ id: 'fake-id-123', email: 'new@test.com', roles: ['student'] }); // ← added roles
-        expect(mockUsersService.create).toHaveBeenCalled();
-        });
+      expect(result).toEqual({
+        id: 'fake-id-123',
+        email: 'new@test.com',
+        roles: ['student'],
+      }); // ← added roles
+      expect(mockUsersService.create).toHaveBeenCalled();
+    });
   });
 
   describe('login', () => {

@@ -75,7 +75,12 @@ export class AuthService {
       roles: user.roles,
     });
 
-    let payload = { sub: user._id, email: email, password: password, roles: user.roles };
+    const payload = {
+      sub: user._id,
+      email: email,
+      password: password,
+      roles: user.roles,
+    };
     const refresh_token = this.jwtService.sign(payload, {
       secret: this.config.get<string>('REFRESH_SECRET'),
       expiresIn: '7d',
@@ -194,7 +199,7 @@ export class AuthService {
     user.mfa_secret = secret.base32;
     await user.save();
 
-    const qrCode = await QRCode.toDataURL(secret.otpauth_url!);
+    const qrCode = await QRCode.toDataURL(secret.otpauth_url);
 
     return {
       qrCode,
@@ -220,7 +225,7 @@ export class AuthService {
     const access_token = this.jwtService.sign({
       sub: user.id,
       email: user.email,
-      roles: user.roles
+      roles: user.roles,
     });
 
     return {

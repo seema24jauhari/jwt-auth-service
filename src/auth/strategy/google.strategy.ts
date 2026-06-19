@@ -7,30 +7,33 @@ import { UsersService } from '../../users/users.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-    constructor(config: ConfigService, private usersService: UsersService) {
-        const clientID = config.get<string>('GOOGLE_CLIENT_ID') ?? '';
-        super({
-            clientID,
-            clientSecret: config.get<string>('GOOGLE_CLIENT_SECRET') ?? '',
-            callbackURL: `${config.get<string>('OAUTH_CALLBACK_BASE')}/auth/google/callback`,
-            scope: ['email', 'profile'],
-        });
-    }
+  constructor(
+    config: ConfigService,
+    private usersService: UsersService,
+  ) {
+    const clientID = config.get<string>('GOOGLE_CLIENT_ID') ?? '';
+    super({
+      clientID,
+      clientSecret: config.get<string>('GOOGLE_CLIENT_SECRET') ?? '',
+      callbackURL: `${config.get<string>('OAUTH_CALLBACK_BASE')}/auth/google/callback`,
+      scope: ['email', 'profile'],
+    });
+  }
 
-    async validate(accessToken: string, refreshToken: string, profile: Profile) {
-        try {
-            const email = profile.emails?.[0]?.value;
-            if (!email) throw new Error('No email returned from Google');
+  async validate(accessToken: string, refreshToken: string, profile: Profile) {
+    try {
+      const email = profile.emails?.[0]?.value;
+      if (!email) throw new Error('No email returned from Google');
 
-            const user = await this.usersService.findOrCreateOAuthUser({
-                email,
-                provider: 'google',
-                providerId: profile.id,
-            });
-            return user;
-        } catch (err) {
-            console.error('GoogleStrategy validate() error:', err);
-            throw err;
-        }
+      const user = await this.usersService.findOrCreateOAuthUser({
+        email,
+        provider: 'google',
+        providerId: profile.id,
+      });
+      return user;
+    } catch (err) {
+      console.error('GoogleStrategy validate() error:', err);
+      throw err;
     }
+  }
 }

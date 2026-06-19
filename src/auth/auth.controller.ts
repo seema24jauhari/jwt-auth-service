@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -10,9 +18,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 @Controller('auth')
 @SkipThrottle()
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,     
-) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
@@ -22,10 +28,14 @@ export class AuthController {
 
   @Post('login')
   @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
-  login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: express.Response, @Req() req: express.Request) {
+  login(
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) res: express.Response,
+    @Req() req: express.Request,
+  ) {
     return this.authService.login(loginDto.email, loginDto.password, res, req);
   }
-  
+
   @Post('refresh')
   @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
   refresh(@Req() req: express.Request) {
@@ -33,7 +43,10 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(@Req() req: express.Request, @Res({ passthrough: true }) res: express.Response) {
+  logout(
+    @Req() req: express.Request,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
     return this.authService.logout(req, res);
   }
 
@@ -45,7 +58,10 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleCallback(@Req() req: any, @Res({ passthrough: true }) res: express.Response) {
+  async googleCallback(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
     return this.authService.handleOAuthLogin(req.user, res);
   }
 
@@ -55,7 +71,10 @@ export class AuthController {
 
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
-  async githubCallback(@Req() req: any, @Res({ passthrough: true }) res: express.Response) {
+  async githubCallback(
+    @Req() req: any,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
     return this.authService.handleOAuthLogin(req.user, res);
   }
 
@@ -68,11 +87,7 @@ export class AuthController {
   @Post('mfa/login')
   @UseGuards(JwtAuthGuard)
   @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
-  verify(@Body() body: {code: string;}, @Req() req: any) 
-  {
-    return this.authService.verifyMfaLogin(
-      req.user.sub._id,
-      body.code,
-    );
+  verify(@Body() body: { code: string }, @Req() req: any) {
+    return this.authService.verifyMfaLogin(req.user.sub._id, body.code);
   }
 }

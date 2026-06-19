@@ -4,28 +4,33 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class RedisThrottlerStorage implements ThrottlerStorage {
-    private client: Redis;
+  private client: Redis;
 
-    constructor(redisUrl: string) {
+  constructor(redisUrl: string) {
+    this.client = new Redis(redisUrl);
+  }
 
-        this.client = new Redis(redisUrl);
+  async increment(
+    key: string,
+    ttl: number,
+    limit: number,
+    blockDuration: number,
+    throttlerName: string,
+  ) {
+    const totalHits = await this.client.incr(key);
+    if (totalHits === 1) {
+      await this.client.expire(key, Math.ceil(ttl / 1000));
     }
+    const timeToExpireSec = await this.client.ttl(key);
 
-    async increment(key: string, ttl: number, limit: number, blockDuration: number, throttlerName: string) {
-        const totalHits = await this.client.incr(key);
-        if (totalHits === 1) {
-           await this.client.expire(key, Math.ceil(ttl / 1000));
-        }
-        const timeToExpireSec = await this.client.ttl(key);
+    const isBlocked = totalHits > limit; // ← the actual fix
+    const timeToBlockExpire = isBlocked ? timeToExpireSec * 1000 : 0;
 
-        const isBlocked = totalHits > limit;   // ← the actual fix
-        const timeToBlockExpire = isBlocked ? timeToExpireSec * 1000 : 0;
-
-        return {
-            totalHits,
-            timeToExpire: timeToExpireSec * 1000,
-            isBlocked,
-            timeToBlockExpire,
-        };
-    }
+    return {
+      totalHits,
+      timeToExpire: timeToExpireSec * 1000,
+      isBlocked,
+      timeToBlockExpire,
+    };
+  }
 }

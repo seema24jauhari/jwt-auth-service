@@ -8,18 +8,17 @@ export const logger = createLogger({
   format: isDev
     ? format.combine(
         format.timestamp({ format: 'HH:mm:ss.sss' }),
-        format.printf(({ timestamp, level, message, correlationId, ...meta }) => {
-          const metaStr = Object.keys(meta).length ? JSON.stringify(meta) : '';
-          const coloredLevel = colorizer.colorize(
-                level,
-                level.toUpperCase(),
-            );
-                return `[${timestamp}] ${coloredLevel}: ${message} ${
-                typeof correlationId === 'string'
-                    ? `(id: ${correlationId})`
-                    : ''
-                } ${metaStr}`;        
-        }),
+        format.printf(
+          ({ timestamp, level, message, correlationId, ...meta }) => {
+            const metaStr = Object.keys(meta).length
+              ? JSON.stringify(meta)
+              : '';
+            const coloredLevel = colorizer.colorize(level, level.toUpperCase());
+            return `[${timestamp}] ${coloredLevel}: ${message} ${
+              typeof correlationId === 'string' ? `(id: ${correlationId})` : ''
+            } ${metaStr}`;
+          },
+        ),
       )
     : format.combine(
         format.timestamp(),

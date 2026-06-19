@@ -7,7 +7,10 @@ import { UsersService } from '../../users/users.service';
 
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
-  constructor(config: ConfigService, private usersService: UsersService) {
+  constructor(
+    config: ConfigService,
+    private usersService: UsersService,
+  ) {
     super({
       clientID: config.get<string>('GITHUB_CLIENT_ID') ?? '',
       clientSecret: config.get<string>('GITHUB_CLIENT_SECRET') ?? '',
@@ -16,20 +19,20 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     });
   }
 
-    async validate(accessToken: string, refreshToken: string, profile: Profile) {
-        try {
-            const email = profile.emails?.[0]?.value;
-            if (!email) throw new Error('No email returned from GitHub');
+  async validate(accessToken: string, refreshToken: string, profile: Profile) {
+    try {
+      const email = profile.emails?.[0]?.value;
+      if (!email) throw new Error('No email returned from GitHub');
 
-            const user = await this.usersService.findOrCreateOAuthUser({
-                email,
-                provider: 'github',
-                providerId: profile.id,
-            });
-            return user;
-        } catch (err) {
-            console.error('GoogleStrategy validate() error:', err);
-            throw err;
-        }
+      const user = await this.usersService.findOrCreateOAuthUser({
+        email,
+        provider: 'github',
+        providerId: profile.id,
+      });
+      return user;
+    } catch (err) {
+      console.error('GoogleStrategy validate() error:', err);
+      throw err;
     }
+  }
 }
