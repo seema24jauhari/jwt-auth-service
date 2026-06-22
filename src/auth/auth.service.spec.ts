@@ -7,12 +7,10 @@ import { ConfigService } from '@nestjs/config';
 import { TokensService } from '../tokens/tokens.service';
 import * as argon2 from 'argon2';
 import { RedisService } from '../redis/redis.service';
+import * as express from 'express';
 
 describe('AuthService', () => {
   let authService: AuthService;
-  let usersService: UsersService;
-  let jwtService: JwtService;
-  let redisService: RedisService;
 
   // Fake versions of every dependency AuthService needs
   const mockUsersService = {
@@ -50,9 +48,6 @@ describe('AuthService', () => {
     }).compile();
 
     authService = module.get<AuthService>(AuthService);
-    usersService = module.get<UsersService>(UsersService);
-    jwtService = module.get<JwtService>(JwtService);
-    redisService = module.get<RedisService>(RedisService);
   });
 
   afterEach(() => {
@@ -66,7 +61,11 @@ describe('AuthService', () => {
       }); // fake: user exists
 
       await expect(
-        authService.register({ email: 'test@test.com', password: 'pass123' }),
+        authService.register({
+          email: 'test@test.com',
+          password: 'pass123',
+          name: 'John',
+        }),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -81,6 +80,7 @@ describe('AuthService', () => {
       const result = await authService.register({
         email: 'new@test.com',
         password: 'pass123',
+        name: 'Rams',
       });
 
       expect(result).toEqual({
@@ -96,11 +96,16 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException if user not found', async () => {
       mockUsersService.findByEmailWithPasswordHash.mockResolvedValue(null);
 
-      const fakeReq: any = { correlationId: 'test-id' };
-      const fakeRes: any = { cookie: jest.fn() };
+      const fakeReq = { correlationId: 'test-id' } as express.Request;
+      const fakeRes: Partial<express.Response> = { cookie: jest.fn() };
 
       await expect(
-        authService.login('notfound@test.com', 'anypass', fakeRes, fakeReq),
+        authService.login(
+          'notfound@test.com',
+          'anypass',
+          fakeRes as express.Response,
+          fakeReq,
+        ),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -112,11 +117,16 @@ describe('AuthService', () => {
         roles: ['student'],
       });
 
-      const fakeReq: any = { correlationId: 'test-id' };
-      const fakeRes: any = { cookie: jest.fn() };
+      const fakeReq = { correlationId: 'test-id' } as express.Request;
+      const fakeRes: Partial<express.Response> = { cookie: jest.fn() };
 
       await expect(
-        authService.login('test@test.com', 'wrongpassword', fakeRes, fakeReq),
+        authService.login(
+          'test@test.com',
+          'wrongpassword',
+          fakeRes as express.Response,
+          fakeReq,
+        ),
       ).rejects.toThrow(UnauthorizedException);
     });
   });

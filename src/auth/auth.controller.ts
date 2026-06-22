@@ -15,6 +15,17 @@ import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 
+interface AuthRequest extends express.Request {
+  user: {
+    id: string;
+    sub: {
+      _id: string;
+    };
+    email: string;
+    roles: string[];
+  };
+}
+
 @Controller('auth')
 @SkipThrottle()
 export class AuthController {
@@ -59,7 +70,7 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleCallback(
-    @Req() req: any,
+    @Req() req: express.Request,
     @Res({ passthrough: true }) res: express.Response,
   ) {
     return this.authService.handleOAuthLogin(req.user, res);
@@ -72,7 +83,7 @@ export class AuthController {
   @Get('github/callback')
   @UseGuards(AuthGuard('github'))
   async githubCallback(
-    @Req() req: any,
+    @Req() req: express.Request,
     @Res({ passthrough: true }) res: express.Response,
   ) {
     return this.authService.handleOAuthLogin(req.user, res);
@@ -80,14 +91,14 @@ export class AuthController {
 
   @Post('mfa/setup')
   @UseGuards(JwtAuthGuard)
-  setup(@Req() req: any) {
+  setup(@Req() req: AuthRequest) {
     return this.authService.setupMfa(req.user.id);
   }
 
   @Post('mfa/login')
   @UseGuards(JwtAuthGuard)
   @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
-  verify(@Body() body: { code: string }, @Req() req: any) {
+  verify(@Body() body: { code: string }, @Req() req: AuthRequest) {
     return this.authService.verifyMfaLogin(req.user.sub._id, body.code);
   }
 }

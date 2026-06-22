@@ -14,8 +14,8 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
     key: string,
     ttl: number,
     limit: number,
-    blockDuration: number,
-    throttlerName: string,
+    _blockDuration: number,
+    _throttlerName: string,
   ) {
     const totalHits = await this.client.incr(key);
     if (totalHits === 1) {

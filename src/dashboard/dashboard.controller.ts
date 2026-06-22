@@ -5,6 +5,14 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { SkipThrottle } from '@nestjs/throttler';
 
+interface JwtUser {
+  sub: string;
+  email: string;
+  roles: string[];
+  iat: number;
+  exp: number;
+}
+
 @Controller()
 @SkipThrottle()
 export class DashboardController {
@@ -12,7 +20,7 @@ export class DashboardController {
   @Roles('staff')
   @UseGuards(JwtAuthGuard, RolesGuard)
   getStaffDashboard(@Req() req: express.Request) {
-    const { iat, exp, ...user } = req.user as any;
+    const { iat: _iat, exp: _exp, ...user } = req.user as JwtUser;
     return { message: 'Welcome staff', user: user };
   }
 
@@ -20,7 +28,7 @@ export class DashboardController {
   @Roles('student')
   @UseGuards(JwtAuthGuard, RolesGuard)
   getStudentDashboard(@Req() req: express.Request) {
-    const { iat, exp, ...user } = req.user as any;
+    const { iat: _iat, exp: _exp, ...user } = req.user as JwtUser;
     return { message: 'Welcome student', user: user };
   }
 }

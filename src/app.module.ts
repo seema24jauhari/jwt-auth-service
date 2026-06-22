@@ -9,7 +9,13 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { RedisThrottlerStorage } from './common/redis-throttler.storage';
 import { APP_GUARD } from '@nestjs/core';
 import { ApiKeyMiddleware } from './common/middleware/api-key.middleware';
+import 'http';
 
+declare module 'http' {
+  interface IncomingMessage {
+    correlationId?: string;
+  }
+}
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,7 +33,7 @@ import { ApiKeyMiddleware } from './common/middleware/api-key.middleware';
     LoggerModule.forRoot({
       pinoHttp: {
         transport: { target: 'pino-pretty' }, // pretty-prints in dev
-        customProps: (req) => ({ correlationId: (req as any).correlationId }),
+        customProps: (req) => ({ correlationId: req.correlationId }),
       },
     }),
     MongooseModule.forRootAsync({

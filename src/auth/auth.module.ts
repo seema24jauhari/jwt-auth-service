@@ -21,7 +21,10 @@ import { GithubStrategy } from './strategy/github.strategy';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>('JWT_SECRET'),
-        signOptions: { expiresIn: config.get<string>('JWT_EXPIRY') as any },
+        signOptions: {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          expiresIn: (config.get<string>('JWT_EXPIRY') ?? '15m') as any,
+        },
       }),
     }),
     UsersModule,

@@ -14,8 +14,15 @@ import { RedisService } from '../redis/redis.service';
 import { logger } from '../common/logger';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
-import { Roles } from 'src/common/decorators/roles.decorator';
 
+interface JwtPayload {
+  sub: string;
+  email: string;
+  roles: string[];
+  exp?: number;
+  iat?: number;
+  password?: string;
+}
 @Injectable()
 export class AuthService {
   constructor(
@@ -109,7 +116,9 @@ export class AuthService {
 
   // auth.service.ts
   async refresh(req: express.Request) {
-    const token = req.cookies?.refresh_token;
+    const token: string | undefined = req.cookies?.refresh_token as
+      | string
+      | undefined;
     if (!token) throw new UnauthorizedException('No refresh token');
 
     // check if token is blacklisted/deleted
@@ -124,8 +133,8 @@ export class AuthService {
     if (isBlacklisted) throw new UnauthorizedException('Token revoked');
 
     try {
-      const payload = this.jwtService.verify(token, {
-        secret: this.config.get<string>('REFRESH_SECRET'),
+      const payload = this.jwtService.verify<JwtPayload>(token, {
+        secret: this.config.getOrThrow<string>('REFRESH_SECRET'),
       });
 
       // Issue a new access token
@@ -142,13 +151,15 @@ export class AuthService {
   }
 
   async logout(req: express.Request, res: express.Response) {
-    const token = req.cookies?.refresh_token;
+    const token: string = req.cookies?.refresh_token as string;
 
     // blacklist it — even if attacker has this token, it won't work
     await this.tokensService.revoke(token);
 
     if (token) {
-      const decoded: any = this.jwtService.decode(token);
+      const decoded: JwtPayload = this.jwtService.decode(token);
+      if (!decoded) throw new UnauthorizedException();
+
       const ttl = decoded.exp - Math.floor(Date.now() / 1000); // seconds left on token
       await this.redisService.blacklistToken(token, ttl); // Redis — instant check going forward
     }
@@ -157,8 +168,15 @@ export class AuthService {
   }
 
   // auth.service.ts — add this method, reusing your existing token-issuing logic
-  async handleOAuthLogin(user: any, res: express.Response) {
-    const payload = { sub: user._id, email: user.email, roles: user.roles };
+  async handleOAuthLogin(
+    user: { _id: string; email: string; roles: [string]; provider: string },
+    res: express.Response,
+  ) {
+    const payload: JwtPayload = {
+      sub: user._id,
+      email: user.email,
+      roles: user.roles,
+    };
     const access_token = this.jwtService.sign(payload);
     const refresh_token = this.jwtService.sign(
       { sub: user._id, email: user.email },
@@ -192,9 +210,14 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const secret = speakeasy.generateSecret({
-      name: `JWTAuth (${user.email})`,
-    });
+    const secret: { base32: string; otpauth_url?: string } =
+      speakeasy.generateSecret({
+        name: `JWTAuth (${user.email})`,
+      });
+
+    if (!secret.otpauth_url) {
+      throw new Error('OTP URL not generated');
+    }
 
     user.mfa_secret = secret.base32;
     await user.save();
