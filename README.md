@@ -2,9 +2,7 @@
 
 Production-grade authentication microservice built with NestJS, MongoDB, and Redis. Designed as a standalone auth layer for SaaS applications — handles token lifecycle, session revocation, MFA, and role-based access control.
 
-> **Live Demo:** https://your-railway-url.railway.app/api  
-> **API Docs:** https://your-railway-url.railway.app/api/docs
-
+> **Live Demo:** https://jwt-auth-service-fw9g.onrender.com  
 ---
 
 ## Features
@@ -12,7 +10,7 @@ Production-grade authentication microservice built with NestJS, MongoDB, and Red
 - JWT access token (15 min) + refresh token rotation (7 days)
 - Redis-backed token revocation — instant logout across all devices
 - Argon2id password hashing
-- Role-based access control (RBAC) — `admin`, `user`, `moderator`
+- Role-based access control (RBAC) — `staff`, `student`
 - TOTP-based MFA (Google Authenticator compatible)
 - Google & GitHub OAuth2 social login
 - Rate limiting on login endpoint (5 attempts / 15 min per IP)
@@ -20,7 +18,7 @@ Production-grade authentication microservice built with NestJS, MongoDB, and Red
 - Request correlation IDs for distributed tracing
 - Swagger/OpenAPI documentation
 - Docker + Docker Compose setup
-- GitHub Actions CI/CD → Railway auto-deploy
+- GitHub Actions CI/CD → Render manual-deploy
 
 ---
 
@@ -36,7 +34,7 @@ Production-grade authentication microservice built with NestJS, MongoDB, and Red
 | Auth | JWT (access + refresh), OAuth2 |
 | Docs | Swagger / OpenAPI 3.0 |
 | Container | Docker, Docker Compose |
-| CI/CD | GitHub Actions → Railway |
+| CI/CD | GitHub Actions → Render|
 
 ---
 
@@ -133,13 +131,11 @@ APP_URL=http://localhost:3000
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
 | GET | `/users/me` | Get own profile | Access token |
-| PATCH | `/users/me` | Update profile | Access token |
-| GET | `/users` | List all users | Admin only |
 
 ### Example: Login
 
 ```bash
-curl -X POST https://your-railway-url.railway.app/auth/login \
+curl -X POST https://jwt-auth-service-fw9g.onrender.com/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "user@example.com", "password": "yourpassword"}'
 ```
@@ -209,8 +205,6 @@ npm run test
 # e2e tests
 npm run test:e2e
 
-# Coverage report
-npm run test:cov
 ```
 
 ---
@@ -224,8 +218,8 @@ Push to main
       → Unit Tests
       → e2e Tests (Docker Compose)
       → Docker Build
-      → Push to Registry
-      → Deploy to Railway
+      → Push to Git
+      → Deploy to Render
 ```
 
 ---
