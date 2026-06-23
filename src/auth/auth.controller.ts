@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Post,
   Req,
@@ -13,7 +14,9 @@ import { LoginDto } from './dto/login.dto';
 import * as express from 'express'; // ← namespace import
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { User } from 'src/users/schemas/user.schema';
+import { Document } from 'mongoose';
 
 interface AuthRequest extends express.Request {
   user: {
@@ -53,7 +56,7 @@ export class AuthController {
     return this.authService.refresh(req);
   }
 
-  @Post('logout')
+  @Delete('logout')
   logout(
     @Req() req: express.Request,
     @Res({ passthrough: true }) res: express.Response,
@@ -73,7 +76,7 @@ export class AuthController {
     @Req() req: express.Request,
     @Res({ passthrough: true }) res: express.Response,
   ) {
-    return this.authService.handleOAuthLogin(req.user, res);
+    return this.authService.handleOAuthLogin(req.user as User & Document, res);
   }
 
   @Get('github')
@@ -86,7 +89,7 @@ export class AuthController {
     @Req() req: express.Request,
     @Res({ passthrough: true }) res: express.Response,
   ) {
-    return this.authService.handleOAuthLogin(req.user, res);
+    return this.authService.handleOAuthLogin(req.user as User & Document, res);
   }
 
   @Post('mfa/setup')

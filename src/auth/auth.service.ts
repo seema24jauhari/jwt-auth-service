@@ -14,6 +14,8 @@ import { RedisService } from '../redis/redis.service';
 import { logger } from '../common/logger';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
+import { User } from 'src/users/schemas/user.schema';
+import { Document } from 'mongoose';
 
 interface JwtPayload {
   sub: string;
@@ -158,7 +160,7 @@ export class AuthService {
 
     if (token) {
       const decoded: JwtPayload = this.jwtService.decode(token);
-      if (!decoded) throw new UnauthorizedException();
+      if (!decoded || !decoded.exp) throw new UnauthorizedException();
 
       const ttl = decoded.exp - Math.floor(Date.now() / 1000); // seconds left on token
       await this.redisService.blacklistToken(token, ttl); // Redis — instant check going forward
@@ -168,12 +170,9 @@ export class AuthService {
   }
 
   // auth.service.ts — add this method, reusing your existing token-issuing logic
-  async handleOAuthLogin(
-    user: { _id: string; email: string; roles: [string]; provider: string },
-    res: express.Response,
-  ) {
+  async handleOAuthLogin(user: User & Document, res: express.Response) {
     const payload: JwtPayload = {
-      sub: user._id,
+      sub: user._id.toString(),
       email: user.email,
       roles: user.roles,
     };
