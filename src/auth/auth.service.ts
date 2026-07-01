@@ -234,6 +234,10 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
+    if (!user.mfa_secret) {
+      throw new UnauthorizedException('MFA is not enabled for this user');
+    }
+
     const valid = speakeasy.totp.verify({
       secret: user.mfa_secret,
       encoding: 'base32',
