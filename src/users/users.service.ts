@@ -19,12 +19,11 @@ export class UsersService {
     return this.userModel.findOne({ id: userId }).select('+mfa_secret');
   }
 
-  create(email: string, password_hash: string, role: string = 'student') {
+  create(email: string, password_hash: string) {
     return this.userModel.create({
       email,
       password_hash,
       is_active: true,
-      roles: [role],
     });
   }
 
@@ -39,7 +38,6 @@ export class UsersService {
         email: data.email,
         provider: data.provider,
         providerId: data.providerId,
-        roles: ['student'],
       });
     }
     return user;

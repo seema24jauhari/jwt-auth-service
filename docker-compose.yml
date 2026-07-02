@@ -1,11 +1,12 @@
 services:
+
   api:
     build: .
-    container_name: jwt-auth-api
+    container_name: real-time-chat-api
     ports:
       - "3000:3000"
     env_file:
-      - .env
+      - .env.docker
     depends_on:
       - mongodb
       - redis
@@ -13,16 +14,16 @@ services:
 
   mongodb:
     image: mongo:8
-    container_name: jwt-auth-mongodb
+    container_name: real-time-chat-mongodb
     ports:    
-      - "27017:27017" 
+      - "27018:27017" 
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
 
   redis:
     image: redis:7-alpine
-    container_name: jwt-auth-redis
+    container_name: real-time-chat-redis
     restart: unless-stopped
 
 volumes:

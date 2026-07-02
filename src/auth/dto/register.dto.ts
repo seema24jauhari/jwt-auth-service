@@ -1,8 +1,6 @@
 import {
   IsEmail,
-  IsIn,
   IsNotEmpty,
-  IsOptional,
   Matches,
   MinLength,
 } from 'class-validator';
@@ -25,8 +23,4 @@ export class RegisterDto {
   @MinLength(6, { message: 'Password must have alteast 6 digits' })
   @IsNotEmpty({ message: 'Password is required' })
   password: string;
-
-  @IsOptional()
-  @IsIn(['student', 'staff'])
-  role?: string;
 }

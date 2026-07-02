@@ -20,7 +20,6 @@ import { Document } from 'mongoose';
 interface JwtPayload {
   sub: string;
   email: string;
-  roles: string[];
   exp?: number;
   iat?: number;
   password?: string;
@@ -48,10 +47,9 @@ export class AuthService {
     const user = await this.usersService.create(
       registerDto.email,
       password_hash,
-      registerDto.role,
     );
 
-    return { id: user._id, email: user.email, roles: user.roles };
+    return { id: user._id, email: user.email };
   }
 
   async login(
@@ -81,14 +79,12 @@ export class AuthService {
     const access_token = this.jwtService.sign({
       sub: user._id,
       email: user.email,
-      roles: user.roles,
     });
 
     const payload = {
       sub: user._id,
       email: email,
       password: password,
-      roles: user.roles,
     };
     const refresh_token = this.jwtService.sign(payload, {
       secret: this.config.get<string>('REFRESH_SECRET'),
@@ -143,7 +139,6 @@ export class AuthService {
       const access_token = this.jwtService.sign({
         sub: payload.sub,
         email: payload.email,
-        roles: payload.roles,
       });
 
       return { access_token };
@@ -174,7 +169,6 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: user._id.toString(),
       email: user.email,
-      roles: user.roles,
     };
     const access_token = this.jwtService.sign(payload);
     const refresh_token = this.jwtService.sign(
