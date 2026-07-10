@@ -19,10 +19,11 @@ export class UsersService {
     return this.userModel.findOne({ id: userId }).select('+mfa_secret');
   }
 
-  create(email: string, password_hash: string, role: string = 'student') {
+  create(email: string, password_hash: string, name: string, role: string = 'student') {
     return this.userModel.create({
       email,
       password_hash,
+      name,
       is_active: true,
       roles: [role],
     });
@@ -32,6 +33,7 @@ export class UsersService {
     email: string;
     provider: string;
     providerId: string;
+    name: string;
   }) {
     let user = await this.userModel.findOne({ email: data.email });
     if (!user) {
@@ -40,6 +42,7 @@ export class UsersService {
         provider: data.provider,
         providerId: data.providerId,
         roles: ['student'],
+        name: data.name,
       });
     }
     return user;

@@ -20,6 +20,7 @@ import { Document } from 'mongoose';
 interface JwtPayload {
   sub: string;
   email: string;
+  name: string;
   roles: string[];
   exp?: number;
   iat?: number;
@@ -48,6 +49,7 @@ export class AuthService {
     const user = await this.usersService.create(
       registerDto.email,
       password_hash,
+      registerDto.name,
       registerDto.role,
     );
 
@@ -81,12 +83,14 @@ export class AuthService {
     const access_token = this.jwtService.sign({
       sub: user._id,
       email: user.email,
+      name: user.name,
       roles: user.roles,
     });
 
     const payload = {
       sub: user._id,
       email: email,
+      name: user.name,
       password: password,
       roles: user.roles,
     };
@@ -113,7 +117,7 @@ export class AuthService {
       userId: user._id,
       correlationId: req.correlationId,
     });
-    return { access_token };
+    return { access_token, name: user.name, roles: user.roles };
   }
 
   // auth.service.ts
@@ -146,7 +150,7 @@ export class AuthService {
         roles: payload.roles,
       });
 
-      return { access_token };
+      return { access_token, name: payload.name, roles: payload.roles };
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
@@ -171,9 +175,11 @@ export class AuthService {
 
   // auth.service.ts — add this method, reusing your existing token-issuing logic
   async handleOAuthLogin(user: User & Document, res: express.Response) {
+    
     const payload: JwtPayload = {
       sub: user._id.toString(),
       email: user.email,
+      name: user.name,
       roles: user.roles,
     };
     const access_token = this.jwtService.sign(payload);
