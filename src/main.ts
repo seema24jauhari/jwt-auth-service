@@ -8,7 +8,7 @@ import {
 import cookieParser from 'cookie-parser'; // ← default import (no * as)
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule,{ cors: false });
+  const app = await NestFactory.create(AppModule, { cors: false });
   app.use(cookieParser()); // ← must be here
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(

@@ -19,7 +19,12 @@ export class UsersService {
     return this.userModel.findOne({ id: userId }).select('+mfa_secret');
   }
 
-  create(email: string, password_hash: string, name: string, role: string = 'student') {
+  create(
+    email: string,
+    password_hash: string,
+    name: string,
+    role: string = 'student',
+  ) {
     return this.userModel.create({
       email,
       password_hash,

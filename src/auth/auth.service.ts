@@ -175,7 +175,6 @@ export class AuthService {
 
   // auth.service.ts — add this method, reusing your existing token-issuing logic
   async handleOAuthLogin(user: User & Document, res: express.Response) {
-    
     const payload: JwtPayload = {
       sub: user._id.toString(),
       email: user.email,
