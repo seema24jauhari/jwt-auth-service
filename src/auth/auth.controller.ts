@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Post,
   Req,
   Res,
@@ -35,12 +36,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @HttpCode(200)
   @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
   @Post('login')
+  @HttpCode(200)
   @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
   login(
     @Body() loginDto: LoginDto,
@@ -51,6 +54,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @HttpCode(200)
   @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
   refresh(@Req() req: express.Request) {
     return this.authService.refresh(req);
@@ -94,14 +98,31 @@ export class AuthController {
 
   @Post('mfa/setup')
   @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
   setup(@Req() req: AuthRequest) {
     return this.authService.setupMfa(req.user.id);
   }
 
   @Post('mfa/login')
   @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
   @Throttle({ default: { limit: 5, ttl: 900000 } }) // 5 attempts per 15 min, THIS route only
-  verify(@Body() body: { code: string }, @Req() req: AuthRequest) {
+  verifyMfa(@Body() body: { code: string }, @Req() req: AuthRequest) {
     return this.authService.verifyMfaLogin(req.user.sub._id, body.code);
+  }
+
+  @Post('forget-password')
+  @HttpCode(200)
+  forgotPassword(@Body('email') email: string) {
+    return this.authService.forgotPassword(email)
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  resetPassword(
+    @Body('token') token: string,
+    @Body('password') password: string
+  ) {
+    return this.authService.resetPassword(token, password)
   }
 }

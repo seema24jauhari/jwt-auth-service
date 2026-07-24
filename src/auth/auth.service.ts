@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -16,6 +17,8 @@ import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
 import { User } from 'src/users/schemas/user.schema';
 import { Document } from 'mongoose';
+import { MailService } from 'src/mail/mail.service';
+import * as crypto from 'crypto'
 
 interface JwtPayload {
   sub: string;
@@ -34,6 +37,7 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private redisService: RedisService,
+    private mailService: MailService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -148,6 +152,7 @@ export class AuthService {
         sub: payload.sub,
         email: payload.email,
         roles: payload.roles,
+        name: payload.name,
       });
 
       return { access_token, name: payload.name, roles: payload.roles };
@@ -262,5 +267,41 @@ export class AuthService {
     return {
       access_token,
     };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findByEmail(email)
+    if (!user) throw new UnauthorizedException('User not found');
+
+
+    const token = crypto.randomBytes(32).toString('hex')
+    const expiry = new Date(Date.now() + 3600000) // 1 hour
+
+    await this.usersService.updateOne({ email }, {
+      resetToken: token,
+      resetTokenExpiry: expiry
+    })
+
+    await this.mailService.sendResetEmail(email, token)
+    return { message: 'Reset email sent' }
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const user = await this.usersService.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: new Date() } // not expired
+    })
+
+    if (!user) throw new BadRequestException('Invalid or expired token')
+    
+    const password_hash = await argon2.hash(newPassword, {
+      type: argon2.argon2id,
+    });
+    user.password_hash = password_hash
+    user.resetToken = null
+    user.resetTokenExpiry = null
+    await user.save()
+
+    return { message: 'Password reset successful' }
   }
 }

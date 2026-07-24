@@ -14,6 +14,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { DashboardModule } from '../dashboard/dashboard.module';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { GithubStrategy } from './strategy/github.strategy';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { GithubStrategy } from './strategy/github.strategy';
     RedisModule,
     PassportModule,
     DashboardModule,
+    MailModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Token.name, schema: TokenSchema },

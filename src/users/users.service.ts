@@ -52,4 +52,12 @@ export class UsersService {
     }
     return user;
   }
+
+  updateOne(filter: any, update: any) {
+    return this.userModel.updateOne(filter, update);      
+  }
+
+  findOne(filter: any) {
+    return this.userModel.findOne(filter);
+  }
 }
