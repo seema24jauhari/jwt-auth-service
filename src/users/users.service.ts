@@ -54,10 +54,12 @@ export class UsersService {
   }
 
   updateOne(filter: any, update: any) {
-    return this.userModel.updateOne(filter, update);      
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    return this.userModel.updateOne(filter, update);
   }
 
   findOne(filter: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return this.userModel.findOne(filter);
   }
 }

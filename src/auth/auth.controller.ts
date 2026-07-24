@@ -114,15 +114,15 @@ export class AuthController {
   @Post('forget-password')
   @HttpCode(200)
   forgotPassword(@Body('email') email: string) {
-    return this.authService.forgotPassword(email)
+    return this.authService.forgotPassword(email);
   }
 
   @Post('reset-password')
   @HttpCode(200)
   resetPassword(
     @Body('token') token: string,
-    @Body('password') password: string
+    @Body('password') password: string,
   ) {
-    return this.authService.resetPassword(token, password)
+    return this.authService.resetPassword(token, password);
   }
 }
