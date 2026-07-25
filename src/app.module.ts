@@ -24,7 +24,12 @@ declare module 'http' {
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        throttlers: [{ ttl: Number(process.env.THROTTLE_TTL_SECONDS ?? 60) * 1000, limit: 20 }],
+        throttlers: [
+          {
+            ttl: Number(process.env.THROTTLE_TTL_SECONDS ?? 60) * 1000,
+            limit: 20,
+          },
+        ],
         storage: new RedisThrottlerStorage(
           config.get<string>('REDIS_URL') ?? 'redis://localhost:6379',
         ),
