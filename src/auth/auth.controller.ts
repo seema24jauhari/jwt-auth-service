@@ -116,13 +116,15 @@ export class AuthController {
   @Post('forget-password')
   @HttpCode(200)
   forgotPassword(@Body() forgetPasswordDto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(forgetPasswordDto.email)
+    return this.authService.forgotPassword(forgetPasswordDto.email);
   }
 
   @Post('reset-password')
   @HttpCode(200)
   resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.password)
+    return this.authService.resetPassword(
+      resetPasswordDto.token,
+      resetPasswordDto.password,
+    );
   }
-
 }
