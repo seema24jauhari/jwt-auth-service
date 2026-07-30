@@ -10,6 +10,7 @@ import { RedisThrottlerStorage } from './common/redis-throttler.storage';
 import { APP_GUARD } from '@nestjs/core';
 import { ApiKeyMiddleware } from './common/middleware/api-key.middleware';
 import 'http';
+import { RedisModule } from './redis/redis-module';
 
 declare module 'http' {
   interface IncomingMessage {
@@ -49,6 +50,7 @@ declare module 'http' {
     }),
     AuthModule,
     UsersModule,
+    RedisModule
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
