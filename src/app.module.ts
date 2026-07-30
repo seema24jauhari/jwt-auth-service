@@ -50,7 +50,7 @@ declare module 'http' {
     }),
     AuthModule,
     UsersModule,
-    RedisModule
+    RedisModule,
   ],
   controllers: [],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
