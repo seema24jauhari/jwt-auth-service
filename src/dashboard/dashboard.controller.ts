@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Req, UseGuards } from '@nestjs/common';
 import * as express from 'express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -16,19 +16,10 @@ interface JwtUser {
 @Controller()
 @SkipThrottle()
 export class DashboardController {
-  @Get('staff')
-  @Roles('staff')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  getStaffDashboard(@Req() req: express.Request) {
-    const { iat: _iat, exp: _exp, ...user } = req.user as JwtUser;
-    return { message: 'Welcome staff', user: user };
-  }
-
-  @Get('student')
-  @Roles('student')
+  @Roles('user')
   @UseGuards(JwtAuthGuard, RolesGuard)
   getStudentDashboard(@Req() req: express.Request) {
     const { iat: _iat, exp: _exp, ...user } = req.user as JwtUser;
-    return { message: 'Welcome student', user: user };
+    return { message: 'Welcome user', user: user };
   }
 }

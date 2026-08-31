@@ -23,7 +23,7 @@ export class UsersService {
     email: string,
     password_hash: string,
     name: string,
-    role: string = 'student',
+    role: string = 'user',
   ) {
     return this.userModel.create({
       email,
@@ -46,7 +46,7 @@ export class UsersService {
         email: data.email,
         provider: data.provider,
         providerId: data.providerId,
-        roles: ['student'],
+        roles: ['user'],
         name: data.name,
       });
     }

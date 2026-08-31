@@ -10,7 +10,7 @@ Production-grade authentication microservice built with NestJS, MongoDB, and Red
 - JWT access token (15 min) + refresh token rotation (7 days)
 - Redis-backed token revocation — instant logout across all devices
 - Argon2id password hashing
-- Role-based access control (RBAC) — `staff`, `student`
+- Role-based access control (RBAC) — `user`, `admin`
 - TOTP-based MFA (Google Authenticator compatible)
 - Google & GitHub OAuth2 social login
 - Rate limiting on login endpoint (5 attempts / 15 min per IP)

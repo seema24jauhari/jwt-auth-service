@@ -74,7 +74,7 @@ describe('AuthService', () => {
       mockUsersService.create.mockResolvedValue({
         _id: 'fake-id-123',
         email: 'new@test.com',
-        roles: ['student'],
+        roles: ['user'],
       });
 
       const result = await authService.register({
@@ -86,7 +86,7 @@ describe('AuthService', () => {
       expect(result).toEqual({
         id: 'fake-id-123',
         email: 'new@test.com',
-        roles: ['student'],
+        roles: ['user'],
       }); // ← added roles
       expect(mockUsersService.create).toHaveBeenCalled();
     });
@@ -114,7 +114,7 @@ describe('AuthService', () => {
         _id: 'user-id',
         email: 'test@test.com',
         password_hash: await argon2.hash('correctpassword'),
-        roles: ['student'],
+        roles: ['user'],
       });
 
       const fakeReq = { correlationId: 'test-id' } as express.Request;
