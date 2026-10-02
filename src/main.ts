@@ -8,6 +8,8 @@ import {
 import cookieParser from 'cookie-parser'; // ← default import (no * as)
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { DocumentBuilder } from 'node_modules/@nestjs/swagger/dist/document-builder';
+import { SwaggerModule } from 'node_modules/@nestjs/swagger/dist/swagger-module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: false });
@@ -33,6 +35,10 @@ async function bootstrap() {
       },
     }),
   );
+
+  const config = new DocumentBuilder().setTitle('Rate Limiter').build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
 }

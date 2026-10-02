@@ -24,7 +24,7 @@ export class TokensService {
       refresh_token_hash: this.hash(refreshToken),
       expires_at: expiresAt,
       revoked: false,
-      session_id
+      session_id,
     });
   }
 

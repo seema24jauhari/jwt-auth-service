@@ -2,7 +2,9 @@
 
 Production-grade authentication microservice built with NestJS, MongoDB, and Redis. Designed as a standalone auth layer for SaaS applications — handles token lifecycle, session revocation, MFA, and role-based access control.
 
-> **Live Demo:** https://jwt-auth-service-fw9g.onrender.com  
+> **Live Demo:** https://jwt-auth-service-fw9g.onrender.com 
+
+![Swagger API docs](docs/screenshots/swagger-api-docs.png)
 ---
 
 ## Features
