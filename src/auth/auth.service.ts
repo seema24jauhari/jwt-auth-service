@@ -124,6 +124,7 @@ export class AuthService {
       userId: user._id,
       correlationId: req.correlationId,
     });
+        
     return { access_token, name: user.name, roles: user.roles };
   }
 

@@ -36,7 +36,7 @@ async function bootstrap() {
     }),
   );
 
-  const config = new DocumentBuilder().setTitle('Rate Limiter').build();
+  const config = new DocumentBuilder().setTitle('Jwt Auth Service').build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 

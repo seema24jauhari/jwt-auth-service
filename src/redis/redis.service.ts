@@ -9,6 +9,7 @@ export class RedisService implements OnModuleDestroy {
 
   constructor(private config: ConfigService) {
     this.client = new Redis(this.config.get<string>('REDIS_URL')!);
+    this.client.on('error', (e) => console.error('Redis error:', e.message || e));
   }
 
   private hash(token: string): string {
